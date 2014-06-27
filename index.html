@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LimitZoom and ContinuousZoom</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script src="Leaflet.LimitZoom.js"></script>
+<script src="Leaflet.ContinuousZoom.js"></script>
+<style>
+html, body { height: 100%; }
+#map { height: 90%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div>Current zoom: <span id="debug">6</span>; tile zooms: 3,6,7,9,11,14; map zooms: 2,3,6-9,11-15. <a href="https://github.com/Zverik/Leaflet.LimitZoom">GitHub repository</a>.</div>
+<script type="text/javascript">
+var map = L.map('map', { zooms: [2,3,6,7,8,9,11,12,13,14,15] }).setView([60, 30], 6);
+L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', { nativeZooms: [3,6,7,9,11,14], attribution: 'Map &copy; OpenStreetMap' }).addTo(map);
+map.on('zoomend', function() { document.getElementById('debug').innerHTML = map.getZoom(); });
+</script>
+</body>
+</html>
