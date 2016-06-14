@@ -16,7 +16,7 @@ not limiting map zooming functionality. Missing levels are interpolated from
 previous, or a minimal existing zoom level. Be careful: set `minZoom` option
 to the minimal native zoom, or number of tile request would be enormous.
 
-To use, include the js file and add `nativeZoom: [2,5,8]` option to a `L.TileLayer`
+To use, include the js file and add `nativeZooms: [2,5,8]` option to a `L.TileLayer`
 object, with zooms you have.
 
 ## Author and License
