@@ -10,12 +10,19 @@ L.Map.include({
 		var zooms = this.options.zooms;
 		if (!zooms || !('length' in zooms) || !zooms.length) {
 			var min = this.getMinZoom(),
-			    max = this.getMaxZoom();
-
+			    max = this.getMaxZoom(),
+			    snap = L.Browser.any3d ? this.options.zoomSnap : 1;
+			if (snap) {
+				zoom = Math.round(zoom / snap) * snap;
+			}
 			return Math.max(min, Math.min(max, zoom));
 		} else {
 			var z, d = 100, i, dist;
 			var dz = -1, dd = 100, dir = zoom - this._zoom;
+			var snap = L.Browser.any3d ? this.options.zoomSnap : 1;
+			if (snap) {
+				zoom = Math.round(zoom / snap) * snap;
+			}
 			for (i = 0; i < zooms.length; i++) {
 				dist = Math.abs(zooms[i] - zoom);
 				if (dist < d) {

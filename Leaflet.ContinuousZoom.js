@@ -5,7 +5,6 @@ L.TileLayer.mergeOptions({
 	nativeZooms: [] // array of integers
 });
 
-// this doesn't work because L.TileLayer does not call init hooks. So do not forget to set options.minZoom!
 L.TileLayer.addInitHook(function () {
 	var opt = this.options,
 	    zooms = opt.nativeZooms;
@@ -14,54 +13,55 @@ L.TileLayer.addInitHook(function () {
 		for (i = 0; i < zooms.length; i++)
 			if (zooms[i] < minZoom)
 				minZoom = zooms[i];
+		opt.minZoom = Math.max(opt.minZoom, minZoom - 1);
 	}
-	opt.minZoom = Math.max(opt.minZoom, minZoom - 1);
 });
 
 L.TileLayer.include({
-	_getTileSize: function () {
+	getTileSize: function () {
 		var map = this._map,
-		    zoom = map.getZoom() + this.options.zoomOffset,
-		    zoomN = this.options.maxNativeZoom,
-		    zoomsN = this.options.nativeZooms,
-		    tileSize = this.options.tileSize;
-
-		var nativeZoom = this._mapNativeZoom(zoom);
+		tileSize = L.GridLayer.prototype.getTileSize.call(this),
+		zoom = this._tileZoom + this.options.zoomOffset,
+		nativeZoom = this._mapNativeZoom(zoom);
 
 		return nativeZoom == zoom ? tileSize :
-			Math.round(map.getZoomScale(zoom) / map.getZoomScale(nativeZoom) * tileSize);
+			tileSize.divideBy(map.getZoomScale(nativeZoom, zoom)).round();
 	},
 
 	_getZoomForUrl: function () {
-		var options = this.options,
-		    zoom = this._map.getZoom();
+		var zoom = this._tileZoom,
+		maxZoom = this.options.maxZoom,
+		zoomReverse = this.options.zoomReverse,
+		zoomOffset = this.options.zoomOffset;
 
-		if (options.zoomReverse) {
-			zoom = options.maxZoom - zoom;
+		if (zoomReverse) {
+			zoom = maxZoom - zoom;
 		}
 
-		zoom += options.zoomOffset;
+		zoom += zoomOffset;
 
 		return this._mapNativeZoom(zoom);
 	},
 
 	_mapNativeZoom: function (zoom) {
-		var zoomN = this.options.maxNativeZoom,
-		    zoomsN = this.options.nativeZooms,
-		    result = zoom;
+		var zooms = this.options.nativeZooms,
+		minNativeZoom = this.options.minNativeZoom,
+		maxNativeZoom = this.options.maxNativeZoom;
 
-		if (zoomsN && zoomsN.length > 0) {
+		if (zooms && zooms.length > 0) {
 			var prevZoom = -1, minZoom = 100, i;
-			for (i = 0; i < zoomsN.length; i++) {
-				if( zoomsN[i] <= zoom && zoomsN[i] > prevZoom )
-					prevZoom = zoomsN[i];
-				if( zoomsN[i] < minZoom )
-					minZoom = zoomsN[i];
+			for (i = 0; i < zooms.length; i++) {
+				if( zooms[i] <= zoom && zooms[i] > prevZoom )
+					prevZoom = zooms[i];
+				if( zooms[i] < minZoom )
+					minZoom = zooms[i];
 			}
-			result = prevZoom < 0 ? minZoom : prevZoom;
-		} else if (zoomN && zoom > zoomN) {
-			result = zoomN;
+			zoom = prevZoom < 0 ? minZoom : prevZoom;
+		} else if (maxNativeZoom !== null && zoom > maxNativeZoom) {
+			zoom = maxNativeZoom;
+		} else if (minNativeZoom !== null && zoom < minNativeZoom) {
+			zoom = minNativeZoom;
 		}
-		return result;
+		return zoom;
 	}
 });
